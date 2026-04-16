@@ -155,13 +155,14 @@ class AdminControlador {
         $clienteModel = new Cliente();
         $mensaje = isset($_GET['msg']) ? trim($_GET['msg']) : null;
         $clienteEditar = null;
+        $usuariosProtegidos = ['cliente_demo', 'admin'];
 
         if (isset($_GET['eliminar_cliente_ci'], $_GET['eliminar_cliente_usuario'])) {
             $ci = trim($_GET['eliminar_cliente_ci']);
             $usuario = trim($_GET['eliminar_cliente_usuario']);
 
-            if ($usuario === 'cliente_demo') {
-                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar cliente_demo porque se usa en el checkout simulado.'));
+            if (in_array($usuario, $usuariosProtegidos, true)) {
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar la cuenta ' . $usuario . ' porque es una cuenta protegida.'));
                 exit();
             }
 
@@ -181,8 +182,8 @@ class AdminControlador {
         if (isset($_GET['eliminar_cuenta'])) {
             $usuario = trim($_GET['eliminar_cuenta']);
 
-            if ($usuario === 'cliente_demo') {
-                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar la cuenta cliente_demo porque se usa en el checkout simulado.'));
+            if (in_array($usuario, $usuariosProtegidos, true)) {
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar la cuenta ' . $usuario . ' porque es una cuenta protegida.'));
                 exit();
             }
 
