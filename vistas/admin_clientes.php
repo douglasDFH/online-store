@@ -77,7 +77,12 @@
                             <?php if (in_array($cuenta['usuario'], ['cliente_demo', 'admin'], true)): ?>
                                 <span class="badge badge-secondary">Protegido</span>
                             <?php else: ?>
-                                <a class="btn btn-danger btn-sm" href="index.php?pagina=admin_clientes&eliminar_cuenta=<?php echo urlencode($cuenta['usuario']); ?>" onclick="return confirm('¿Eliminar la cuenta <?php echo htmlspecialchars($cuenta['usuario'], ENT_QUOTES); ?>?');">Eliminar</a>
+                                <a class="btn btn-danger btn-sm btn-delete"
+                                   href="#"
+                                   data-toggle="modal"
+                                   data-target="#confirmDeleteModal"
+                                   data-url="index.php?pagina=admin_clientes&eliminar_cuenta=<?php echo urlencode($cuenta['usuario']); ?>"
+                                   data-label="la cuenta <?php echo htmlspecialchars($cuenta['usuario'], ENT_QUOTES); ?>">Eliminar</a>
                             <?php endif; ?>
                         </span>
                     </li>
@@ -109,7 +114,12 @@
                                     <?php if (in_array($cliente['usuarioCuenta'], ['cliente_demo', 'admin'], true)): ?>
                                         <span class="badge badge-secondary">Protegido</span>
                                     <?php else: ?>
-                                        <a class="btn btn-danger btn-sm" href="index.php?pagina=admin_clientes&eliminar_cliente_ci=<?php echo urlencode($cliente['ci']); ?>&eliminar_cliente_usuario=<?php echo urlencode($cliente['usuarioCuenta']); ?>" onclick="return confirm('¿Eliminar cliente y su cuenta asociada?');">Eliminar</a>
+                                        <a class="btn btn-danger btn-sm btn-delete"
+                                           href="#"
+                                           data-toggle="modal"
+                                           data-target="#confirmDeleteModal"
+                                           data-url="index.php?pagina=admin_clientes&eliminar_cliente_ci=<?php echo urlencode($cliente['ci']); ?>&eliminar_cliente_usuario=<?php echo urlencode($cliente['usuarioCuenta']); ?>"
+                                           data-label="el cliente <?php echo htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apPaterno'], ENT_QUOTES); ?> y su cuenta asociada">Eliminar</a>
                                     <?php endif; ?>
                                 </td>
                             </tr>
@@ -120,4 +130,50 @@
         </div>
     </div>
 </div>
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" role="dialog" aria-labelledby="confirmDeleteModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteModalLabel">Confirmar eliminacion</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Cerrar">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body" id="confirmDeleteModalBody">
+                ¿Estas seguro de eliminar este registro?
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+                <a href="#" class="btn btn-danger" id="confirmDeleteButton">Eliminar</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    var modal = document.getElementById('confirmDeleteModal');
+    var btnConfirmar = document.getElementById('confirmDeleteButton');
+    var cuerpoModal = document.getElementById('confirmDeleteModalBody');
+
+    $('#confirmDeleteModal').on('show.bs.modal', function (event) {
+        var trigger = event.relatedTarget;
+        if (!trigger) {
+            btnConfirmar.setAttribute('href', '#');
+            cuerpoModal.textContent = '¿Estas seguro de eliminar este registro?';
+            return;
+        }
+
+        var url = trigger.getAttribute('data-url') || '#';
+        var etiqueta = trigger.getAttribute('data-label') || 'este registro';
+        btnConfirmar.setAttribute('href', url);
+        cuerpoModal.textContent = '¿Estas seguro de eliminar ' + etiqueta + '?';
+    });
+
+    modal.addEventListener('hidden.bs.modal', function () {
+        btnConfirmar.setAttribute('href', '#');
+    });
+});
+</script>
 <?php require_once __DIR__ . '/layout/pie.php'; ?>
