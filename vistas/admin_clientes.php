@@ -72,7 +72,10 @@
                 <?php foreach ($cuentas as $cuenta): ?>
                     <li class="list-group-item d-flex justify-content-between">
                         <span><?php echo htmlspecialchars($cuenta['usuario']); ?></span>
-                        <small><?php echo htmlspecialchars($cuenta['password']); ?></small>
+                        <span>
+                            <small class="mr-2"><?php echo htmlspecialchars($cuenta['password']); ?></small>
+                            <a class="btn btn-danger btn-sm" href="index.php?pagina=admin_clientes&eliminar_cuenta=<?php echo urlencode($cuenta['usuario']); ?>" onclick="return confirm('¿Eliminar la cuenta <?php echo htmlspecialchars($cuenta['usuario'], ENT_QUOTES); ?>?');">Eliminar</a>
+                        </span>
                     </li>
                 <?php endforeach; ?>
             </ul>
@@ -99,6 +102,7 @@
                                 <td><?php echo htmlspecialchars($cliente['usuarioCuenta']); ?></td>
                                 <td>
                                     <a class="btn btn-warning btn-sm" href="index.php?pagina=admin_clientes&editar_ci=<?php echo urlencode($cliente['ci']); ?>&editar_usuario=<?php echo urlencode($cliente['usuarioCuenta']); ?>">Editar</a>
+                                    <a class="btn btn-danger btn-sm" href="index.php?pagina=admin_clientes&eliminar_cliente_ci=<?php echo urlencode($cliente['ci']); ?>&eliminar_cliente_usuario=<?php echo urlencode($cliente['usuarioCuenta']); ?>" onclick="return confirm('¿Eliminar cliente y su cuenta asociada?');">Eliminar</a>
                                 </td>
                             </tr>
                         <?php endforeach; ?>

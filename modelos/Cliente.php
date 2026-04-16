@@ -55,4 +55,15 @@ class Cliente {
         $stmt->bind_param('ssssssss', $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $ci, $usuarioCuenta);
         return $stmt->execute();
     }
+
+    public function eliminar($ci, $usuarioCuenta) {
+        $sql = "DELETE FROM `Cliente` WHERE ci = ? AND usuarioCuenta = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('ss', $ci, $usuarioCuenta);
+        return $stmt->execute();
+    }
 }

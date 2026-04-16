@@ -153,8 +153,49 @@ class AdminControlador {
     public function clientes() {
         $cuentaModel = new Cuenta();
         $clienteModel = new Cliente();
-        $mensaje = null;
+        $mensaje = isset($_GET['msg']) ? trim($_GET['msg']) : null;
         $clienteEditar = null;
+
+        if (isset($_GET['eliminar_cliente_ci'], $_GET['eliminar_cliente_usuario'])) {
+            $ci = trim($_GET['eliminar_cliente_ci']);
+            $usuario = trim($_GET['eliminar_cliente_usuario']);
+
+            if ($usuario === 'cliente_demo') {
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar cliente_demo porque se usa en el checkout simulado.'));
+                exit();
+            }
+
+            $okCliente = $clienteModel->eliminar($ci, $usuario);
+            if ($okCliente) {
+                if (!$cuentaModel->tieneClienteAsociado($usuario)) {
+                    $cuentaModel->eliminar($usuario);
+                }
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('Cliente eliminado correctamente.'));
+                exit();
+            }
+
+            header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se pudo eliminar el cliente.'));
+            exit();
+        }
+
+        if (isset($_GET['eliminar_cuenta'])) {
+            $usuario = trim($_GET['eliminar_cuenta']);
+
+            if ($usuario === 'cliente_demo') {
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar la cuenta cliente_demo porque se usa en el checkout simulado.'));
+                exit();
+            }
+
+            if ($cuentaModel->tieneClienteAsociado($usuario)) {
+                header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('No se puede eliminar la cuenta: tiene cliente asociado.'));
+                exit();
+            }
+
+            $okCuenta = $cuentaModel->eliminar($usuario);
+            $msg = $okCuenta ? 'Cuenta eliminada correctamente.' : 'No se pudo eliminar la cuenta.';
+            header('Location: index.php?pagina=admin_clientes&msg=' . urlencode($msg));
+            exit();
+        }
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $accion = $_POST['accion'] ?? 'crear';
