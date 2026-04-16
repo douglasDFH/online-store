@@ -8,6 +8,8 @@ $paginasPermitidas = [
     'carrito',
     'pago',
     'pago_exitoso',
+    'login',
+    'logout',
     'admin_catalogos',
     'admin_sucursales',
     'admin_clientes',
@@ -17,6 +19,15 @@ $paginasPermitidas = [
 
 if (!in_array($pagina, $paginasPermitidas)) {
     $pagina = 'inicio';
+}
+
+// Validar acceso a páginas administrativas
+$paginasAdmin = ['admin_catalogos', 'admin_sucursales', 'admin_clientes', 'admin_productos', 'admin_ventas'];
+if (in_array($pagina, $paginasAdmin)) {
+    if (!isset($_SESSION['usuario']) || !isset($_SESSION['es_admin']) || !$_SESSION['es_admin']) {
+        header('Location: index.php?pagina=login');
+        exit();
+    }
 }
 
 switch ($pagina) {
@@ -35,6 +46,14 @@ switch ($pagina) {
     case 'pago_exitoso':
         require_once __DIR__ . '/controladores/PagoControlador.php';
         (new PagoControlador())->exitoso();
+        break;
+    case 'login':
+        require_once __DIR__ . '/controladores/AutenticacionControlador.php';
+        (new AutenticacionControlador())->login();
+        break;
+    case 'logout':
+        require_once __DIR__ . '/controladores/AutenticacionControlador.php';
+        (new AutenticacionControlador())->logout();
         break;
     case 'admin_catalogos':
         require_once __DIR__ . '/controladores/AdminControlador.php';

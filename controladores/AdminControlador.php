@@ -10,7 +10,16 @@ require_once __DIR__ . '/../modelos/DetalleProductoSucursal.php';
 require_once __DIR__ . '/../modelos/NotaVenta.php';
 
 class AdminControlador {
+    private function validarAutenticacion() {
+        if (!isset($_SESSION['usuario']) || !isset($_SESSION['es_admin']) || !$_SESSION['es_admin']) {
+            header('Location: index.php?pagina=login');
+            exit();
+        }
+    }
+
     public function catalogos() {
+        $this->validarAutenticacion();
+
         $marcaModel = new Marca();
         $categoriaModel = new Categoria();
         $industriaModel = new Industria();
@@ -113,6 +122,8 @@ class AdminControlador {
     }
 
     public function sucursales() {
+        $this->validarAutenticacion();
+
         $sucursalModel = new Sucursal();
         $mensaje = null;
         $sucursalEditar = null;
@@ -151,6 +162,8 @@ class AdminControlador {
     }
 
     public function clientes() {
+        $this->validarAutenticacion();
+
         $cuentaModel = new Cuenta();
         $clienteModel = new Cliente();
         $mensaje = isset($_GET['msg']) ? trim($_GET['msg']) : null;
@@ -259,6 +272,8 @@ class AdminControlador {
     }
 
     public function productos() {
+        $this->validarAutenticacion();
+
         $productoModel = new Producto();
         $marcaModel = new Marca();
         $categoriaModel = new Categoria();
@@ -344,6 +359,8 @@ class AdminControlador {
     }
 
     public function ventas() {
+        $this->validarAutenticacion();
+
         $notaModel = new NotaVenta();
         $ventas = $notaModel->obtenerTodasConResumen();
 
