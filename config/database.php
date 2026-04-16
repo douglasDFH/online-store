@@ -7,7 +7,7 @@ class Database {
             $host           = "localhost";
             $usuario        = "root";
             $password       = "";
-            $base_de_datos  = "comercio_electronico";
+            $base_de_datos  = "mydb";
 
             self::$conexion = new mysqli($host, $usuario, $password, $base_de_datos);
 
