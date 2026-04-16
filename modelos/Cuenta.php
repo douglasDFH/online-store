@@ -21,4 +21,13 @@ class Cuenta {
         $stmt->bind_param('ss', $usuario, $password);
         return $stmt->execute();
     }
+
+    public function actualizarPassword($usuario, $password) {
+        $stmt = $this->db->prepare("UPDATE `Cuenta` SET password = ? WHERE usuario = ?");
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param('ss', $password, $usuario);
+        return $stmt->execute();
+    }
 }

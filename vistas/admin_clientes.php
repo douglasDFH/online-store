@@ -7,48 +7,62 @@
     <?php endif; ?>
 
     <form method="POST" action="index.php?pagina=admin_clientes" class="card card-body mb-4">
-        <h5 class="mb-3">Nueva cuenta + cliente</h5>
+        <input type="hidden" name="accion" value="<?php echo !empty($clienteEditar) ? 'editar' : 'crear'; ?>">
+        <h5 class="mb-3"><?php echo !empty($clienteEditar) ? 'Editar cliente' : 'Nueva cuenta + cliente'; ?></h5>
         <div class="form-row">
             <div class="form-group col-md-3">
                 <label>Usuario</label>
-                <input type="text" name="usuario" class="form-control" required>
+                <?php if (!empty($clienteEditar)): ?>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($clienteEditar['usuarioCuenta']); ?>" readonly>
+                    <input type="hidden" name="usuarioCuenta" value="<?php echo htmlspecialchars($clienteEditar['usuarioCuenta']); ?>">
+                <?php else: ?>
+                    <input type="text" name="usuario" class="form-control" required>
+                <?php endif; ?>
             </div>
             <div class="form-group col-md-3">
                 <label>Password</label>
-                <input type="text" name="password" class="form-control" required>
+                <input type="text" name="password" class="form-control" <?php echo empty($clienteEditar) ? 'required' : ''; ?> placeholder="<?php echo !empty($clienteEditar) ? 'Opcional para cambiar' : ''; ?>">
             </div>
             <div class="form-group col-md-3">
                 <label>CI</label>
-                <input type="text" name="ci" class="form-control" required>
+                <?php if (!empty($clienteEditar)): ?>
+                    <input type="text" class="form-control" value="<?php echo htmlspecialchars($clienteEditar['ci']); ?>" readonly>
+                    <input type="hidden" name="ci" value="<?php echo htmlspecialchars($clienteEditar['ci']); ?>">
+                <?php else: ?>
+                    <input type="text" name="ci" class="form-control" required>
+                <?php endif; ?>
             </div>
             <div class="form-group col-md-3">
                 <label>Nombres</label>
-                <input type="text" name="nombres" class="form-control" required>
+                <input type="text" name="nombres" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['nombres']) : ''; ?>" required>
             </div>
         </div>
         <div class="form-row">
             <div class="form-group col-md-2">
                 <label>Ap. Paterno</label>
-                <input type="text" name="apPaterno" class="form-control" required>
+                <input type="text" name="apPaterno" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['apPaterno']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-2">
                 <label>Ap. Materno</label>
-                <input type="text" name="apMaterno" class="form-control" required>
+                <input type="text" name="apMaterno" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['apMaterno']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-3">
                 <label>Correo</label>
-                <input type="email" name="correo" class="form-control" required>
+                <input type="email" name="correo" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['correo']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-3">
                 <label>Direccion</label>
-                <input type="text" name="direccion" class="form-control" required>
+                <input type="text" name="direccion" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['direccion']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-2">
                 <label>Celular</label>
-                <input type="text" name="nroCelular" class="form-control" required>
+                <input type="text" name="nroCelular" class="form-control" value="<?php echo !empty($clienteEditar) ? htmlspecialchars($clienteEditar['nroCelular']) : ''; ?>" required>
             </div>
         </div>
-        <button class="btn btn-primary" type="submit">Guardar cliente</button>
+        <button class="btn btn-primary" type="submit"><?php echo !empty($clienteEditar) ? 'Actualizar cliente' : 'Guardar cliente'; ?></button>
+        <?php if (!empty($clienteEditar)): ?>
+            <a href="index.php?pagina=admin_clientes" class="btn btn-secondary mt-2">Cancelar edicion</a>
+        <?php endif; ?>
     </form>
 
     <div class="row">
@@ -73,6 +87,7 @@
                             <th>Nombre</th>
                             <th>Correo</th>
                             <th>Usuario</th>
+                            <th>Accion</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -82,6 +97,9 @@
                                 <td><?php echo htmlspecialchars($cliente['nombres'] . ' ' . $cliente['apPaterno'] . ' ' . $cliente['apMaterno']); ?></td>
                                 <td><?php echo htmlspecialchars($cliente['correo']); ?></td>
                                 <td><?php echo htmlspecialchars($cliente['usuarioCuenta']); ?></td>
+                                <td>
+                                    <a class="btn btn-warning btn-sm" href="index.php?pagina=admin_clientes&editar_ci=<?php echo urlencode($cliente['ci']); ?>&editar_usuario=<?php echo urlencode($cliente['usuarioCuenta']); ?>">Editar</a>
+                                </td>
                             </tr>
                         <?php endforeach; ?>
                     </tbody>

@@ -16,6 +16,9 @@ class Producto {
                     p.precio,
                     p.imagen,
                     p.estado,
+                    p.codMarca,
+                    p.codIndustria,
+                    p.codCategoria,
                     COALESCE(SUM(CAST(dps.stock AS UNSIGNED)), 0) AS stock,
                     m.nombre AS marca,
                     c.nombre AS categoria,
@@ -25,7 +28,7 @@ class Producto {
                 LEFT JOIN `Marca` m ON m.cod = p.codMarca
                 LEFT JOIN `Categoria` c ON c.cod = p.codCategoria
                 LEFT JOIN `Industria` i ON i.cod = p.codIndustria
-                GROUP BY p.cod, p.nombre, p.descripcion, p.precio, p.imagen, p.estado, m.nombre, c.nombre, i.nombre
+                GROUP BY p.cod, p.nombre, p.descripcion, p.precio, p.imagen, p.estado, p.codMarca, p.codIndustria, p.codCategoria, m.nombre, c.nombre, i.nombre
                 ORDER BY p.cod DESC";
 
         $resultado = $this->db->query($sql);
@@ -50,6 +53,9 @@ class Producto {
                     p.precio,
                     p.imagen,
                     p.estado,
+                    p.codMarca,
+                    p.codIndustria,
+                    p.codCategoria,
                     COALESCE(SUM(CAST(dps.stock AS UNSIGNED)), 0) AS stock,
                     m.nombre AS marca,
                     c.nombre AS categoria,
@@ -60,7 +66,7 @@ class Producto {
                 LEFT JOIN `Categoria` c ON c.cod = p.codCategoria
                 LEFT JOIN `Industria` i ON i.cod = p.codIndustria
                 WHERE p.cod = ?
-                GROUP BY p.cod, p.nombre, p.descripcion, p.precio, p.imagen, p.estado, m.nombre, c.nombre, i.nombre";
+                GROUP BY p.cod, p.nombre, p.descripcion, p.precio, p.imagen, p.estado, p.codMarca, p.codIndustria, p.codCategoria, m.nombre, c.nombre, i.nombre";
 
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {

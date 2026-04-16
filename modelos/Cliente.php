@@ -27,4 +27,32 @@ class Cliente {
         $stmt->bind_param('ssssssss', $ci, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $usuarioCuenta);
         return $stmt->execute();
     }
+
+    public function obtenerPorClave($ci, $usuarioCuenta) {
+        $sql = "SELECT ci, nombres, apPaterno, apMaterno, correo, direccion, nroCelular, usuarioCuenta
+                FROM `Cliente`
+                WHERE ci = ? AND usuarioCuenta = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            return null;
+        }
+
+        $stmt->bind_param('ss', $ci, $usuarioCuenta);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+        return $resultado ? $resultado->fetch_assoc() : null;
+    }
+
+    public function actualizar($ci, $usuarioCuenta, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular) {
+        $sql = "UPDATE `Cliente`
+                SET nombres = ?, apPaterno = ?, apMaterno = ?, correo = ?, direccion = ?, nroCelular = ?
+                WHERE ci = ? AND usuarioCuenta = ?";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param('ssssssss', $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $ci, $usuarioCuenta);
+        return $stmt->execute();
+    }
 }

@@ -7,30 +7,31 @@
     <?php endif; ?>
 
     <form method="POST" action="index.php?pagina=admin_productos" class="card card-body mb-4">
-        <h5>Nuevo producto</h5>
-        <input type="hidden" name="accion" value="crear_producto">
+        <h5><?php echo !empty($productoEditar) ? 'Editar producto' : 'Nuevo producto'; ?></h5>
+        <input type="hidden" name="accion" value="<?php echo !empty($productoEditar) ? 'editar_producto' : 'crear_producto'; ?>">
+        <input type="hidden" name="id_producto" value="<?php echo !empty($productoEditar) ? (int)$productoEditar['id_producto'] : 0; ?>">
         <div class="form-row">
             <div class="form-group col-md-3">
                 <label>Nombre</label>
-                <input type="text" name="nombre" class="form-control" required>
+                <input type="text" name="nombre" class="form-control" value="<?php echo !empty($productoEditar) ? htmlspecialchars($productoEditar['nombre']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-3">
                 <label>Descripcion</label>
-                <input type="text" name="descripcion" class="form-control" required>
+                <input type="text" name="descripcion" class="form-control" value="<?php echo !empty($productoEditar) ? htmlspecialchars($productoEditar['descripcion']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-2">
                 <label>Precio</label>
-                <input type="number" name="precio" class="form-control" step="0.01" min="0.01" required>
+                <input type="number" name="precio" class="form-control" step="0.01" min="0.01" value="<?php echo !empty($productoEditar) ? htmlspecialchars($productoEditar['precio']) : ''; ?>" required>
             </div>
             <div class="form-group col-md-2">
                 <label>Imagen</label>
-                <input type="text" name="imagen" class="form-control" value="sudadera.png" required>
+                <input type="text" name="imagen" class="form-control" value="<?php echo !empty($productoEditar) ? htmlspecialchars($productoEditar['imagen']) : 'sudadera.png'; ?>" required>
             </div>
             <div class="form-group col-md-2">
                 <label>Estado</label>
                 <select name="estado" class="form-control">
-                    <option value="activo">activo</option>
-                    <option value="inactivo">inactivo</option>
+                    <option value="activo" <?php echo (!empty($productoEditar) && $productoEditar['estado'] === 'activo') ? 'selected' : ''; ?>>activo</option>
+                    <option value="inactivo" <?php echo (!empty($productoEditar) && $productoEditar['estado'] === 'inactivo') ? 'selected' : ''; ?>>inactivo</option>
                 </select>
             </div>
         </div>
@@ -40,7 +41,7 @@
                 <select name="codMarca" class="form-control" required>
                     <option value="">Seleccione</option>
                     <?php foreach ($marcas as $marca): ?>
-                        <option value="<?php echo (int)$marca['cod']; ?>"><?php echo htmlspecialchars($marca['nombre']); ?></option>
+                        <option value="<?php echo (int)$marca['cod']; ?>" <?php echo (!empty($productoEditar) && (int)$productoEditar['codMarca'] === (int)$marca['cod']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($marca['nombre']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -49,7 +50,7 @@
                 <select name="codIndustria" class="form-control" required>
                     <option value="">Seleccione</option>
                     <?php foreach ($industrias as $industria): ?>
-                        <option value="<?php echo (int)$industria['cod']; ?>"><?php echo htmlspecialchars($industria['nombre']); ?></option>
+                        <option value="<?php echo (int)$industria['cod']; ?>" <?php echo (!empty($productoEditar) && (int)$productoEditar['codIndustria'] === (int)$industria['cod']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($industria['nombre']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
@@ -58,12 +59,15 @@
                 <select name="codCategoria" class="form-control" required>
                     <option value="">Seleccione</option>
                     <?php foreach ($categorias as $categoria): ?>
-                        <option value="<?php echo (int)$categoria['cod']; ?>"><?php echo htmlspecialchars($categoria['nombre']); ?></option>
+                        <option value="<?php echo (int)$categoria['cod']; ?>" <?php echo (!empty($productoEditar) && (int)$productoEditar['codCategoria'] === (int)$categoria['cod']) ? 'selected' : ''; ?>><?php echo htmlspecialchars($categoria['nombre']); ?></option>
                     <?php endforeach; ?>
                 </select>
             </div>
         </div>
-        <button class="btn btn-primary" type="submit">Guardar producto</button>
+        <button class="btn btn-primary" type="submit"><?php echo !empty($productoEditar) ? 'Actualizar producto' : 'Guardar producto'; ?></button>
+        <?php if (!empty($productoEditar)): ?>
+            <a href="index.php?pagina=admin_productos" class="btn btn-secondary mt-2">Cancelar edicion</a>
+        <?php endif; ?>
     </form>
 
     <form method="POST" action="index.php?pagina=admin_productos" class="card card-body mb-4">
@@ -122,6 +126,7 @@
                         <td>$<?php echo number_format($producto['precio'], 2); ?></td>
                         <td><?php echo (int)$producto['stock']; ?></td>
                         <td>
+                            <a class="btn btn-warning btn-sm" href="index.php?pagina=admin_productos&editar_producto=<?php echo (int)$producto['id_producto']; ?>">Editar</a>
                             <a class="btn btn-danger btn-sm" href="index.php?pagina=admin_productos&eliminar_producto=<?php echo (int)$producto['id_producto']; ?>">Eliminar</a>
                         </td>
                     </tr>

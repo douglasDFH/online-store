@@ -22,6 +22,16 @@ class Marca {
         return $stmt->execute();
     }
 
+    public function actualizar($cod, $nombre) {
+        $cod = (int)$cod;
+        $stmt = $this->db->prepare("UPDATE `Marca` SET nombre = ? WHERE cod = ?");
+        if (!$stmt) {
+            return false;
+        }
+        $stmt->bind_param('si', $nombre, $cod);
+        return $stmt->execute();
+    }
+
     public function eliminar($cod) {
         $cod = (int)$cod;
         $stmt = $this->db->prepare("DELETE FROM `Marca` WHERE cod = ?");

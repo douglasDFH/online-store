@@ -15,21 +15,43 @@ class AdminControlador {
         $categoriaModel = new Categoria();
         $industriaModel = new Industria();
         $mensaje = null;
+        $edicion = [
+            'tipo' => '',
+            'cod' => 0,
+            'nombre' => ''
+        ];
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $accion = $_POST['accion'] ?? 'crear';
             $tipo = $_POST['tipo'] ?? '';
+            $cod = (int)($_POST['cod'] ?? 0);
             $nombre = trim($_POST['nombre'] ?? '');
 
             if ($nombre !== '') {
                 if ($tipo === 'marca') {
-                    $marcaModel->crear($nombre);
-                    $mensaje = 'Marca creada correctamente.';
+                    if ($accion === 'editar' && $cod > 0) {
+                        $marcaModel->actualizar($cod, $nombre);
+                        $mensaje = 'Marca actualizada correctamente.';
+                    } else {
+                        $marcaModel->crear($nombre);
+                        $mensaje = 'Marca creada correctamente.';
+                    }
                 } elseif ($tipo === 'categoria') {
-                    $categoriaModel->crear($nombre);
-                    $mensaje = 'Categoria creada correctamente.';
+                    if ($accion === 'editar' && $cod > 0) {
+                        $categoriaModel->actualizar($cod, $nombre);
+                        $mensaje = 'Categoria actualizada correctamente.';
+                    } else {
+                        $categoriaModel->crear($nombre);
+                        $mensaje = 'Categoria creada correctamente.';
+                    }
                 } elseif ($tipo === 'industria') {
-                    $industriaModel->crear($nombre);
-                    $mensaje = 'Industria creada correctamente.';
+                    if ($accion === 'editar' && $cod > 0) {
+                        $industriaModel->actualizar($cod, $nombre);
+                        $mensaje = 'Industria actualizada correctamente.';
+                    } else {
+                        $industriaModel->crear($nombre);
+                        $mensaje = 'Industria creada correctamente.';
+                    }
                 }
             }
         }
@@ -54,6 +76,38 @@ class AdminControlador {
         $categorias = $categoriaModel->obtenerTodos();
         $industrias = $industriaModel->obtenerTodos();
 
+        if (isset($_GET['editar_tipo'], $_GET['cod'])) {
+            $tipo = $_GET['editar_tipo'];
+            $cod = (int)$_GET['cod'];
+
+            if ($tipo === 'marca') {
+                foreach ($marcas as $fila) {
+                    if ((int)$fila['cod'] === $cod) {
+                        $edicion = ['tipo' => 'marca', 'cod' => $cod, 'nombre' => $fila['nombre']];
+                        break;
+                    }
+                }
+            }
+
+            if ($tipo === 'categoria') {
+                foreach ($categorias as $fila) {
+                    if ((int)$fila['cod'] === $cod) {
+                        $edicion = ['tipo' => 'categoria', 'cod' => $cod, 'nombre' => $fila['nombre']];
+                        break;
+                    }
+                }
+            }
+
+            if ($tipo === 'industria') {
+                foreach ($industrias as $fila) {
+                    if ((int)$fila['cod'] === $cod) {
+                        $edicion = ['tipo' => 'industria', 'cod' => $cod, 'nombre' => $fila['nombre']];
+                        break;
+                    }
+                }
+            }
+        }
+
         $titulo = 'Administracion - Catalogos';
         require_once __DIR__ . '/../vistas/admin_catalogos.php';
     }
@@ -61,15 +115,23 @@ class AdminControlador {
     public function sucursales() {
         $sucursalModel = new Sucursal();
         $mensaje = null;
+        $sucursalEditar = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+            $accion = $_POST['accion'] ?? 'crear';
+            $cod = (int)($_POST['cod'] ?? 0);
             $nombre = trim($_POST['nombre'] ?? '');
             $direccion = trim($_POST['direccion'] ?? '');
             $nroTelefono = trim($_POST['nroTelefono'] ?? '');
 
             if ($nombre !== '' && $direccion !== '' && $nroTelefono !== '') {
-                $sucursalModel->crear($nombre, $direccion, $nroTelefono);
-                $mensaje = 'Sucursal creada correctamente.';
+                if ($accion === 'editar' && $cod > 0) {
+                    $sucursalModel->actualizar($cod, $nombre, $direccion, $nroTelefono);
+                    $mensaje = 'Sucursal actualizada correctamente.';
+                } else {
+                    $sucursalModel->crear($nombre, $direccion, $nroTelefono);
+                    $mensaje = 'Sucursal creada correctamente.';
+                }
             }
         }
 
@@ -77,6 +139,10 @@ class AdminControlador {
             $sucursalModel->eliminar((int)$_GET['eliminar']);
             header('Location: index.php?pagina=admin_sucursales');
             exit();
+        }
+
+        if (isset($_GET['editar'])) {
+            $sucursalEditar = $sucursalModel->obtenerPorCod((int)$_GET['editar']);
         }
 
         $sucursales = $sucursalModel->obtenerTodas();
@@ -88,26 +154,58 @@ class AdminControlador {
         $cuentaModel = new Cuenta();
         $clienteModel = new Cliente();
         $mensaje = null;
+        $clienteEditar = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-            $usuario = trim($_POST['usuario'] ?? '');
-            $password = trim($_POST['password'] ?? '');
-            $ci = trim($_POST['ci'] ?? '');
-            $nombres = trim($_POST['nombres'] ?? '');
-            $apPaterno = trim($_POST['apPaterno'] ?? '');
-            $apMaterno = trim($_POST['apMaterno'] ?? '');
-            $correo = trim($_POST['correo'] ?? '');
-            $direccion = trim($_POST['direccion'] ?? '');
-            $nroCelular = trim($_POST['nroCelular'] ?? '');
+            $accion = $_POST['accion'] ?? 'crear';
 
-            if ($usuario !== '' && $password !== '' && $ci !== '' && $nombres !== '' && $apPaterno !== '' && $apMaterno !== '' && $correo !== '' && $direccion !== '' && $nroCelular !== '') {
-                $okCuenta = $cuentaModel->crear($usuario, $password);
-                if ($okCuenta) {
-                    $clienteModel->crear($ci, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $usuario);
-                    $mensaje = 'Cliente y cuenta creados correctamente.';
-                } else {
-                    $mensaje = 'No se pudo crear la cuenta (puede existir ya el usuario).';
+            if ($accion === 'crear') {
+                $usuario = trim($_POST['usuario'] ?? '');
+                $password = trim($_POST['password'] ?? '');
+                $ci = trim($_POST['ci'] ?? '');
+                $nombres = trim($_POST['nombres'] ?? '');
+                $apPaterno = trim($_POST['apPaterno'] ?? '');
+                $apMaterno = trim($_POST['apMaterno'] ?? '');
+                $correo = trim($_POST['correo'] ?? '');
+                $direccion = trim($_POST['direccion'] ?? '');
+                $nroCelular = trim($_POST['nroCelular'] ?? '');
+
+                if ($usuario !== '' && $password !== '' && $ci !== '' && $nombres !== '' && $apPaterno !== '' && $apMaterno !== '' && $correo !== '' && $direccion !== '' && $nroCelular !== '') {
+                    $okCuenta = $cuentaModel->crear($usuario, $password);
+                    if ($okCuenta) {
+                        $clienteModel->crear($ci, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $usuario);
+                        $mensaje = 'Cliente y cuenta creados correctamente.';
+                    } else {
+                        $mensaje = 'No se pudo crear la cuenta (puede existir ya el usuario).';
+                    }
                 }
+            }
+
+            if ($accion === 'editar') {
+                $usuarioCuenta = trim($_POST['usuarioCuenta'] ?? '');
+                $ci = trim($_POST['ci'] ?? '');
+                $password = trim($_POST['password'] ?? '');
+                $nombres = trim($_POST['nombres'] ?? '');
+                $apPaterno = trim($_POST['apPaterno'] ?? '');
+                $apMaterno = trim($_POST['apMaterno'] ?? '');
+                $correo = trim($_POST['correo'] ?? '');
+                $direccion = trim($_POST['direccion'] ?? '');
+                $nroCelular = trim($_POST['nroCelular'] ?? '');
+
+                if ($usuarioCuenta !== '' && $ci !== '' && $nombres !== '' && $apPaterno !== '' && $apMaterno !== '' && $correo !== '' && $direccion !== '' && $nroCelular !== '') {
+                    $clienteModel->actualizar($ci, $usuarioCuenta, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular);
+                    if ($password !== '') {
+                        $cuentaModel->actualizarPassword($usuarioCuenta, $password);
+                    }
+                    $mensaje = 'Cliente actualizado correctamente.';
+                }
+            }
+        }
+
+        if (isset($_GET['editar_ci'], $_GET['editar_usuario'])) {
+            $clienteEditar = $clienteModel->obtenerPorClave($_GET['editar_ci'], $_GET['editar_usuario']);
+            if ($clienteEditar) {
+                $clienteEditar['password'] = '';
             }
         }
 
@@ -126,6 +224,7 @@ class AdminControlador {
         $sucursalModel = new Sucursal();
         $stockModel = new DetalleProductoSucursal();
         $mensaje = null;
+        $productoEditar = null;
 
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $accion = $_POST['accion'] ?? '';
@@ -143,6 +242,23 @@ class AdminControlador {
                 if ($nombre !== '' && $descripcion !== '' && $precio > 0 && $codMarca > 0 && $codIndustria > 0 && $codCategoria > 0) {
                     $productoModel->agregar($nombre, $descripcion, $precio, $imagen, $codMarca, $codIndustria, $codCategoria, $estado);
                     $mensaje = 'Producto creado correctamente.';
+                }
+            }
+
+            if ($accion === 'editar_producto') {
+                $idProducto = (int)($_POST['id_producto'] ?? 0);
+                $nombre = trim($_POST['nombre'] ?? '');
+                $descripcion = trim($_POST['descripcion'] ?? '');
+                $precio = (float)($_POST['precio'] ?? 0);
+                $imagen = trim($_POST['imagen'] ?? 'sudadera.png');
+                $estado = trim($_POST['estado'] ?? 'activo');
+                $codMarca = (int)($_POST['codMarca'] ?? 0);
+                $codIndustria = (int)($_POST['codIndustria'] ?? 0);
+                $codCategoria = (int)($_POST['codCategoria'] ?? 0);
+
+                if ($idProducto > 0 && $nombre !== '' && $descripcion !== '' && $precio > 0 && $codMarca > 0 && $codIndustria > 0 && $codCategoria > 0) {
+                    $productoModel->actualizar($idProducto, $nombre, $descripcion, $precio, $imagen, $codMarca, $codIndustria, $codCategoria, $estado);
+                    $mensaje = 'Producto actualizado correctamente.';
                 }
             }
 
@@ -168,6 +284,10 @@ class AdminControlador {
             $stockModel->eliminar((int)$_GET['eliminar_stock_producto'], (int)$_GET['eliminar_stock_sucursal']);
             header('Location: index.php?pagina=admin_productos');
             exit();
+        }
+
+        if (isset($_GET['editar_producto'])) {
+            $productoEditar = $productoModel->obtenerPorId((int)$_GET['editar_producto']);
         }
 
         $productos = $productoModel->obtenerTodos();
