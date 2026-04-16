@@ -9,7 +9,7 @@
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
-        <a class="navbar-brand" href="index.php">
+        <a class="navbar-brand" href="index.php?pagina=inicio">
             <img src="https://getbootstrap.com/docs/4.5/assets/brand/bootstrap-solid.svg" width="30" height="30" alt="Logo" class="d-inline-block align-top">
             Tienda en Línea
         </a>
@@ -20,13 +20,28 @@
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ml-auto">
                 <li class="nav-item">
-                    <a class="nav-link" href="index.php">Inicio</a>
+                    <a class="nav-link" href="index.php?pagina=inicio">Inicio</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="index.php?pagina=carrito">Carrito</a>
                 </li>
                 <li class="nav-item">
                     <a class="nav-link" href="index.php?pagina=pago">Pagar</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?pagina=admin_catalogos">Catalogos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?pagina=admin_productos">Productos</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?pagina=admin_sucursales">Sucursales</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?pagina=admin_clientes">Clientes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="index.php?pagina=admin_ventas">Ventas</a>
                 </li>
             </ul>
         </div>

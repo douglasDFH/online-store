@@ -17,9 +17,16 @@
                         <div class="card-body">
                             <h5 class="card-title"><?php echo htmlspecialchars($producto['nombre']); ?></h5>
                             <p class="card-text"><?php echo htmlspecialchars($producto['descripcion']); ?></p>
+                            <p class="card-text mb-1"><small>Marca: <?php echo htmlspecialchars($producto['marca'] ?? 'N/D'); ?></small></p>
+                            <p class="card-text mb-2"><small>Categoría: <?php echo htmlspecialchars($producto['categoria'] ?? 'N/D'); ?></small></p>
                             <p class="card-text"><strong>Precio: $<?php echo number_format($producto['precio'], 2); ?></strong></p>
-                            <a href="index.php?pagina=carrito&accion=agregar&id=<?php echo $producto['id_producto']; ?>"
-                               class="btn btn-primary">Agregar al carrito</a>
+                            <p class="card-text"><small>Stock disponible: <?php echo (int)($producto['stock'] ?? 0); ?></small></p>
+                            <?php if (($producto['estado'] ?? '') === 'activo'): ?>
+                                <a href="index.php?pagina=carrito&accion=agregar&id=<?php echo $producto['id_producto']; ?>"
+                                   class="btn btn-primary">Agregar al carrito</a>
+                            <?php else: ?>
+                                <button class="btn btn-secondary" disabled>No disponible</button>
+                            <?php endif; ?>
                         </div>
                     </div>
                 </div>

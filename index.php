@@ -3,7 +3,17 @@ session_start();
 
 $pagina = $_GET['pagina'] ?? 'inicio';
 
-$paginasPermitidas = ['inicio', 'carrito', 'pago', 'pago_exitoso'];
+$paginasPermitidas = [
+    'inicio',
+    'carrito',
+    'pago',
+    'pago_exitoso',
+    'admin_catalogos',
+    'admin_sucursales',
+    'admin_clientes',
+    'admin_productos',
+    'admin_ventas'
+];
 
 if (!in_array($pagina, $paginasPermitidas)) {
     $pagina = 'inicio';
@@ -25,5 +35,25 @@ switch ($pagina) {
     case 'pago_exitoso':
         require_once __DIR__ . '/controladores/PagoControlador.php';
         (new PagoControlador())->exitoso();
+        break;
+    case 'admin_catalogos':
+        require_once __DIR__ . '/controladores/AdminControlador.php';
+        (new AdminControlador())->catalogos();
+        break;
+    case 'admin_sucursales':
+        require_once __DIR__ . '/controladores/AdminControlador.php';
+        (new AdminControlador())->sucursales();
+        break;
+    case 'admin_clientes':
+        require_once __DIR__ . '/controladores/AdminControlador.php';
+        (new AdminControlador())->clientes();
+        break;
+    case 'admin_productos':
+        require_once __DIR__ . '/controladores/AdminControlador.php';
+        (new AdminControlador())->productos();
+        break;
+    case 'admin_ventas':
+        require_once __DIR__ . '/controladores/AdminControlador.php';
+        (new AdminControlador())->ventas();
         break;
 }

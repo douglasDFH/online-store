@@ -9,11 +9,16 @@ class Usuario {
     }
 
     public function verificarCredenciales($usuario, $password) {
-        $usuario  = $this->db->real_escape_string($usuario);
-        $password = $this->db->real_escape_string($password);
-        $resultado = $this->db->query(
-            "SELECT * FROM usuarios WHERE usuario = '$usuario' AND password = '$password'"
-        );
-        return $resultado->num_rows == 1;
+        $sql = "SELECT usuario FROM `Cuenta` WHERE usuario = ? AND password = ? LIMIT 1";
+        $stmt = $this->db->prepare($sql);
+        if (!$stmt) {
+            return false;
+        }
+
+        $stmt->bind_param("ss", $usuario, $password);
+        $stmt->execute();
+        $resultado = $stmt->get_result();
+
+        return $resultado && $resultado->num_rows === 1;
     }
 }

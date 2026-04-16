@@ -3,6 +3,10 @@ require_once __DIR__ . '/../modelos/Producto.php';
 
 class CarritoControlador {
     public function index() {
+        if (!isset($_SESSION['carrito']) || !is_array($_SESSION['carrito'])) {
+            $_SESSION['carrito'] = [];
+        }
+
         $this->procesarAccion();
 
         $modelo = new Producto();
@@ -32,6 +36,12 @@ class CarritoControlador {
         if (!isset($_GET['accion'], $_GET['id'])) return;
 
         $id = (int)$_GET['id'];
+        $modelo = new Producto();
+        $producto = $modelo->obtenerPorId($id);
+
+        if (!$producto || (isset($producto['estado']) && strtolower($producto['estado']) !== 'activo')) {
+            return;
+        }
 
         if ($_GET['accion'] === 'agregar') {
             $encontrado = false;
