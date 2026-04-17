@@ -22,7 +22,18 @@ class DetalleProductoSucursal {
     public function guardarStock($codProducto, $codSucursal, $stock) {
         $codProducto = (int)$codProducto;
         $codSucursal = (int)$codSucursal;
-        $stock = (string)$stock;
+        $stock = (int)$stock;
+
+        $stmtSp = $this->db->prepare("CALL sp_guardar_stock_sucursal(?, ?, ?)");
+        if ($stmtSp) {
+            $stmtSp->bind_param('iii', $codProducto, $codSucursal, $stock);
+            $ok = $stmtSp->execute();
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+            if ($ok) {
+                return true;
+            }
+        }
 
         $sql = "INSERT INTO `DetalleProductoSucursal` (codProducto, codSucursal, stock)
                 VALUES (?, ?, ?)
@@ -33,7 +44,7 @@ class DetalleProductoSucursal {
             return false;
         }
 
-        $stmt->bind_param('iis', $codProducto, $codSucursal, $stock);
+        $stmt->bind_param('iii', $codProducto, $codSucursal, $stock);
         return $stmt->execute();
     }
 
@@ -46,5 +57,14 @@ class DetalleProductoSucursal {
         }
         $stmt->bind_param('ii', $codProducto, $codSucursal);
         return $stmt->execute();
+    }
+
+    private function limpiarResultadosPendientes() {
+        while ($this->db->more_results() && $this->db->next_result()) {
+            $resultado = $this->db->use_result();
+            if ($resultado instanceof mysqli_result) {
+                $resultado->free();
+            }
+        }
     }
 }

@@ -23,24 +23,7 @@ class Venta {
             $this->asegurarCuentaDemo($usuarioDemo, $passwordDemo);
             $this->asegurarClienteDemo($ciDemo, $usuarioDemo);
 
-            $nroVenta = $this->obtenerSiguienteNumeroVenta();
-
-            $sqlVenta = "INSERT INTO `NotaVenta` (nro, fechaHora, ciCliente) VALUES (?, NOW(), ?)";
-            $stmtVenta = $this->db->prepare($sqlVenta);
-            if (!$stmtVenta) {
-                throw new Exception('No se pudo preparar la nota de venta.');
-            }
-
-            $stmtVenta->bind_param('is', $nroVenta, $ciDemo);
-            if (!$stmtVenta->execute()) {
-                throw new Exception('No se pudo registrar la nota de venta.');
-            }
-
-            $sqlDetalle = "INSERT INTO `DetalleNotaVenta` (nroNotaVenta, codProducto, item, cant) VALUES (?, ?, ?, ?)";
-            $stmtDetalle = $this->db->prepare($sqlDetalle);
-            if (!$stmtDetalle) {
-                throw new Exception('No se pudo preparar el detalle de venta.');
-            }
+            $nroVenta = $this->crearNotaVenta($ciDemo);
 
             $item = 1;
             foreach ($carrito as $linea) {
@@ -55,8 +38,7 @@ class Venta {
                     continue;
                 }
 
-                $stmtDetalle->bind_param('iiii', $nroVenta, $codProducto, $item, $cantidad);
-                if (!$stmtDetalle->execute()) {
+                if (!$this->insertarDetalleVenta($nroVenta, $codProducto, $item, $cantidad)) {
                     throw new Exception('No se pudo registrar el detalle de venta.');
                 }
 
@@ -144,6 +126,74 @@ class Venta {
 
         $fila = $resultado->fetch_assoc();
         return (int)$fila['siguiente'];
+    }
+
+    private function crearNotaVenta($ciCliente) {
+        $stmt = $this->db->prepare("CALL sp_crear_nota_venta(?, @p_nro_venta)");
+        if ($stmt) {
+            $stmt->bind_param('s', $ciCliente);
+            $ok = $stmt->execute();
+            $stmt->close();
+            $this->limpiarResultadosPendientes();
+
+            if ($ok) {
+                $resultado = $this->db->query("SELECT @p_nro_venta AS nro");
+                if ($resultado) {
+                    $fila = $resultado->fetch_assoc();
+                    $nro = isset($fila['nro']) ? (int)$fila['nro'] : 0;
+                    if ($nro > 0) {
+                        return $nro;
+                    }
+                }
+            }
+        }
+
+        // Fallback para entornos donde los procedimientos aun no fueron instalados.
+        $nroVenta = $this->obtenerSiguienteNumeroVenta();
+
+        $sqlVenta = "INSERT INTO `NotaVenta` (nro, fechaHora, ciCliente) VALUES (?, NOW(), ?)";
+        $stmtVenta = $this->db->prepare($sqlVenta);
+        if (!$stmtVenta) {
+            throw new Exception('No se pudo preparar la nota de venta.');
+        }
+
+        $stmtVenta->bind_param('is', $nroVenta, $ciCliente);
+        if (!$stmtVenta->execute()) {
+            throw new Exception('No se pudo registrar la nota de venta.');
+        }
+
+        return $nroVenta;
+    }
+
+    private function insertarDetalleVenta($nroVenta, $codProducto, $item, $cantidad) {
+        $stmt = $this->db->prepare("CALL sp_insertar_detalle_venta(?, ?, ?, ?)");
+        if ($stmt) {
+            $stmt->bind_param('iiii', $nroVenta, $codProducto, $item, $cantidad);
+            $ok = $stmt->execute();
+            $stmt->close();
+            $this->limpiarResultadosPendientes();
+            if ($ok) {
+                return true;
+            }
+        }
+
+        $sqlDetalle = "INSERT INTO `DetalleNotaVenta` (nroNotaVenta, codProducto, item, cant) VALUES (?, ?, ?, ?)";
+        $stmtDetalle = $this->db->prepare($sqlDetalle);
+        if (!$stmtDetalle) {
+            return false;
+        }
+
+        $stmtDetalle->bind_param('iiii', $nroVenta, $codProducto, $item, $cantidad);
+        return $stmtDetalle->execute();
+    }
+
+    private function limpiarResultadosPendientes() {
+        while ($this->db->more_results() && $this->db->next_result()) {
+            $resultado = $this->db->use_result();
+            if ($resultado instanceof mysqli_result) {
+                $resultado->free();
+            }
+        }
     }
 
     private function existeProducto($codProducto) {

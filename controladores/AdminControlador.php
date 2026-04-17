@@ -179,11 +179,8 @@ class AdminControlador {
                 exit();
             }
 
-            $okCliente = $clienteModel->eliminar($ci, $usuario);
+            $okCliente = $clienteModel->eliminarClienteYCuentaSegura($ci, $usuario);
             if ($okCliente) {
-                if (!$cuentaModel->tieneClienteAsociado($usuario)) {
-                    $cuentaModel->eliminar($usuario);
-                }
                 header('Location: index.php?pagina=admin_clientes&msg=' . urlencode('Cliente eliminado correctamente.'));
                 exit();
             }
@@ -226,9 +223,9 @@ class AdminControlador {
                 $nroCelular = trim($_POST['nroCelular'] ?? '');
 
                 if ($usuario !== '' && $password !== '' && $ci !== '' && $nombres !== '' && $apPaterno !== '' && $apMaterno !== '' && $correo !== '' && $direccion !== '' && $nroCelular !== '') {
-                    $okCuenta = $cuentaModel->crear($usuario, $password);
-                    if ($okCuenta) {
-                        $clienteModel->crear($ci, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $usuario);
+                    $passwordHash = password_hash($password, PASSWORD_DEFAULT);
+                    $okCreacion = $clienteModel->crearConCuenta($usuario, $passwordHash, $ci, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular);
+                    if ($okCreacion) {
                         $mensaje = 'Cliente y cuenta creados correctamente.';
                     } else {
                         $mensaje = 'No se pudo crear la cuenta (puede existir ya el usuario).';
@@ -248,11 +245,9 @@ class AdminControlador {
                 $nroCelular = trim($_POST['nroCelular'] ?? '');
 
                 if ($usuarioCuenta !== '' && $ci !== '' && $nombres !== '' && $apPaterno !== '' && $apMaterno !== '' && $correo !== '' && $direccion !== '' && $nroCelular !== '') {
-                    $clienteModel->actualizar($ci, $usuarioCuenta, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular);
-                    if ($password !== '') {
-                        $cuentaModel->actualizarPassword($usuarioCuenta, $password);
-                    }
-                    $mensaje = 'Cliente actualizado correctamente.';
+                    $passwordHash = $password !== '' ? password_hash($password, PASSWORD_DEFAULT) : '';
+                    $okActualizacion = $clienteModel->actualizarConPassword($ci, $usuarioCuenta, $nombres, $apPaterno, $apMaterno, $correo, $direccion, $nroCelular, $passwordHash);
+                    $mensaje = $okActualizacion ? 'Cliente actualizado correctamente.' : 'No se pudo actualizar el cliente.';
                 }
             }
         }

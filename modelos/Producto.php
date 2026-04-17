@@ -9,6 +9,20 @@ class Producto {
     }
 
     public function obtenerTodos() {
+        $stmtSp = $this->db->prepare("CALL sp_listar_productos_con_stock_total()");
+        if ($stmtSp) {
+            $ok = $stmtSp->execute();
+            if ($ok) {
+                $resultado = $stmtSp->get_result();
+                $datos = $resultado ? $resultado->fetch_all(MYSQLI_ASSOC) : [];
+                $stmtSp->close();
+                $this->limpiarResultadosPendientes();
+                return $datos;
+            }
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+        }
+
         $sql = "SELECT
                     p.cod AS id_producto,
                     p.nombre,
@@ -46,6 +60,22 @@ class Producto {
 
     public function obtenerPorId($id) {
         $id = (int)$id;
+
+        $stmtSp = $this->db->prepare("CALL sp_obtener_producto_por_id(?)");
+        if ($stmtSp) {
+            $stmtSp->bind_param("i", $id);
+            $ok = $stmtSp->execute();
+            if ($ok) {
+                $resultado = $stmtSp->get_result();
+                $fila = $resultado ? $resultado->fetch_assoc() : null;
+                $stmtSp->close();
+                $this->limpiarResultadosPendientes();
+                return $fila ?: null;
+            }
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+        }
+
         $sql = "SELECT
                     p.cod AS id_producto,
                     p.nombre,
@@ -84,6 +114,22 @@ class Producto {
     }
 
     public function agregar($nombre, $descripcion, $precio, $imagen, $codMarca, $codIndustria, $codCategoria, $estado = 'activo') {
+        $precio = (float)$precio;
+        $codMarca = (int)$codMarca;
+        $codIndustria = (int)$codIndustria;
+        $codCategoria = (int)$codCategoria;
+
+        $stmtSp = $this->db->prepare("CALL sp_crear_producto(?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($stmtSp) {
+            $stmtSp->bind_param("ssdssiii", $nombre, $descripcion, $precio, $imagen, $estado, $codMarca, $codIndustria, $codCategoria);
+            $ok = $stmtSp->execute();
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+            if ($ok) {
+                return true;
+            }
+        }
+
         $sql = "INSERT INTO `Producto` (nombre, descripcion, precio, imagen, estado, codMarca, codIndustria, codCategoria)
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
@@ -92,16 +138,28 @@ class Producto {
             return false;
         }
 
-        $precio = (float)$precio;
-        $codMarca = (int)$codMarca;
-        $codIndustria = (int)$codIndustria;
-        $codCategoria = (int)$codCategoria;
-
         $stmt->bind_param("ssdssiii", $nombre, $descripcion, $precio, $imagen, $estado, $codMarca, $codIndustria, $codCategoria);
         return $stmt->execute();
     }
 
     public function actualizar($id, $nombre, $descripcion, $precio, $imagen, $codMarca, $codIndustria, $codCategoria, $estado = 'activo') {
+        $id = (int)$id;
+        $precio = (float)$precio;
+        $codMarca = (int)$codMarca;
+        $codIndustria = (int)$codIndustria;
+        $codCategoria = (int)$codCategoria;
+
+        $stmtSp = $this->db->prepare("CALL sp_actualizar_producto(?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        if ($stmtSp) {
+            $stmtSp->bind_param("issdssiii", $id, $nombre, $descripcion, $precio, $imagen, $estado, $codMarca, $codIndustria, $codCategoria);
+            $ok = $stmtSp->execute();
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+            if ($ok) {
+                return true;
+            }
+        }
+
         $sql = "UPDATE `Producto`
                 SET nombre = ?, descripcion = ?, precio = ?, imagen = ?, estado = ?, codMarca = ?, codIndustria = ?, codCategoria = ?
                 WHERE cod = ?";
@@ -111,25 +169,40 @@ class Producto {
             return false;
         }
 
-        $id = (int)$id;
-        $precio = (float)$precio;
-        $codMarca = (int)$codMarca;
-        $codIndustria = (int)$codIndustria;
-        $codCategoria = (int)$codCategoria;
-
         $stmt->bind_param("ssdssiiii", $nombre, $descripcion, $precio, $imagen, $estado, $codMarca, $codIndustria, $codCategoria, $id);
         return $stmt->execute();
     }
 
     public function eliminar($id) {
+        $id = (int)$id;
+
+        $stmtSp = $this->db->prepare("CALL sp_eliminar_producto(?)");
+        if ($stmtSp) {
+            $stmtSp->bind_param("i", $id);
+            $ok = $stmtSp->execute();
+            $stmtSp->close();
+            $this->limpiarResultadosPendientes();
+            if ($ok) {
+                return true;
+            }
+        }
+
         $sql = "DELETE FROM `Producto` WHERE cod = ?";
         $stmt = $this->db->prepare($sql);
         if (!$stmt) {
             return false;
         }
 
-        $id = (int)$id;
         $stmt->bind_param("i", $id);
         return $stmt->execute();
+    }
+
+    private function limpiarResultadosPendientes() {
+        while ($this->db->more_results() && $this->db->next_result()) {
+            $resultado = $this->db->use_result();
+            if ($resultado instanceof mysqli_result) {
+                $resultado->free();
+            }
+        }
     }
 }
